@@ -95,7 +95,7 @@ class ImageAdmin(FileAdmin):
 
 
 if FILER_IMAGE_MODEL == 'filer.Image':
-    extra_main_fields = ('author', 'default_alt_text', 'default_caption',)
+    extra_main_fields = ('author', 'default_alt_text', 'default_caption', 'default_alt_text_ru', 'default_caption_ru',)
 else:
     extra_main_fields = ('default_alt_text', 'default_caption',)
 
