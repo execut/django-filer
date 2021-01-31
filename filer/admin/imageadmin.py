@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
+from parler.forms import TranslatableModelForm
 
 from ..settings import FILER_IMAGE_MODEL
 from ..thumbnail_processors import normalize_subject_location
@@ -12,7 +13,7 @@ from .fileadmin import FileAdmin
 Image = load_model(FILER_IMAGE_MODEL)
 
 
-class ImageAdminForm(forms.ModelForm):
+class ImageAdminForm(TranslatableModelForm):
     subject_location = forms.CharField(
         max_length=64, required=False,
         label=_('Subject location'),

@@ -13,14 +13,21 @@ from django.utils.translation import gettext_lazy as _
 
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
+from polymorphic.query import PolymorphicQuerySet
+from parler.managers import TranslatableManager, TranslatableQuerySet
+from parler.models import TranslatableModel, TranslatedFields
 
 from .. import settings as filer_settings
 from ..fields.multistorage_file import MultiStorageFileField
 from . import mixins
 from .foldermodels import Folder
 
+class FileQuerySet(TranslatableQuerySet, PolymorphicQuerySet):
+    pass
 
-class FileManager(PolymorphicManager):
+class FileManager(PolymorphicManager, TranslatableManager):
+    queryset_class = FileQuerySet
+
     def find_all_duplicates(self):
         r = {}
         for file_obj in self.all():
@@ -46,7 +53,7 @@ def mimetype_validator(value):
         raise ValidationError(msg.format(mimetype=value))
 
 
-class File(PolymorphicModel, mixins.IconsMixin):
+class File(TranslatableModel, PolymorphicModel, mixins.IconsMixin):
     file_type = 'File'
     _icon = "file"
     _file_data_changed_hint = None
@@ -67,8 +74,12 @@ class File(PolymorphicModel, mixins.IconsMixin):
     has_all_mandatory_data = models.BooleanField(_('has all mandatory data'), default=False, editable=False)
 
     original_filename = models.CharField(_('original filename'), max_length=255, blank=True, null=True)
-    name = models.CharField(max_length=255, default="", blank=True, verbose_name=_('name'))
-    description = models.TextField(null=True, blank=True, verbose_name=_('description'))
+    translations = TranslatedFields(
+        name = models.CharField(max_length=255, default="", blank=True,
+            verbose_name=_('name')),
+        description = models.TextField(null=True, blank=True,
+            verbose_name=_('description'))
+    )
 
     owner = models.ForeignKey(
         getattr(settings, 'AUTH_USER_MODEL', 'auth.User'),
@@ -224,10 +235,11 @@ class File(PolymorphicModel, mixins.IconsMixin):
 
     @property
     def label(self):
-        if self.name in ['', None]:
+        name = self.safe_translation_getter('name')
+        if not name:
             text = self.original_filename or 'unnamed file'
         else:
-            text = self.name
+            text = name
         text = "%s" % (text,)
         return text
 
@@ -261,10 +273,11 @@ class File(PolymorphicModel, mixins.IconsMixin):
             return False
 
     def __str__(self):
-        if self.name in ('', None):
+        name = self.safe_translation_getter('name')
+        if not name:
             text = "%s" % (self.original_filename,)
         else:
-            text = "%s" % (self.name,)
+            text = "%s" % (name,)
         return text
 
     def get_admin_change_url(self):

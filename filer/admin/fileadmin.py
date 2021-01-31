@@ -4,6 +4,8 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
+from parler.admin import TranslatableAdmin
+from parler.forms import TranslatableModelForm
 
 from .. import settings
 from ..models import File
@@ -11,16 +13,16 @@ from .permissions import PrimitivePermissionAwareModelAdmin
 from .tools import AdminContext, admin_url_params_encoded, popup_status
 
 
-class FileAdminChangeFrom(forms.ModelForm):
+class FileAdminChangeFrom(TranslatableModelForm):
     class Meta:
         model = File
         exclude = ()
 
 
-class FileAdmin(PrimitivePermissionAwareModelAdmin):
+class FileAdmin(TranslatableAdmin, PrimitivePermissionAwareModelAdmin):
     list_display = ('label',)
     list_per_page = 10
-    search_fields = ['name', 'original_filename', 'sha1', 'description']
+    search_fields = ['translations__name', 'original_filename', 'sha1', 'translations__description']
     raw_id_fields = ('owner',)
     readonly_fields = ('sha1', 'display_canonical')
 

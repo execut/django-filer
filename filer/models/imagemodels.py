@@ -7,6 +7,7 @@ from django.utils.timezone import get_current_timezone, make_aware, now
 from django.utils.translation import gettext_lazy as _
 
 from .abstract import BaseImage
+from parler.models import TranslatedFields
 
 
 logger = logging.getLogger("filer")
@@ -16,7 +17,11 @@ logger = logging.getLogger("filer")
 class Image(BaseImage):
     date_taken = models.DateTimeField(_('date taken'), null=True, blank=True,
                                       editable=False)
-    author = models.CharField(_('author'), max_length=255, null=True, blank=True)
+    translations2 = TranslatedFields(
+        default_alt_text=models.CharField(_('default alt text'), max_length=255, blank=True, null=True),
+        default_caption=models.CharField(_('default caption'), max_length=255, blank=True, null=True),
+        author=models.CharField(_('author'), max_length=255, null=True, blank=True)
+    )
     must_always_publish_author_credit = models.BooleanField(_('must always publish author credit'), default=False)
     must_always_publish_copyright = models.BooleanField(_('must always publish copyright'), default=False)
 

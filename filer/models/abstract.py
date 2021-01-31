@@ -8,7 +8,7 @@ from ..utils.compatibility import PILImage
 from ..utils.filer_easy_thumbnails import FilerThumbnailer
 from ..utils.pil_exif import get_exif_for_file
 from .filemodels import File
-
+from parler.fields import TranslatedField
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +29,8 @@ class BaseImage(File):
     _height = models.IntegerField(null=True, blank=True)
     _width = models.IntegerField(null=True, blank=True)
 
-    default_alt_text = models.CharField(_('default alt text'), max_length=255, blank=True, null=True)
-    default_caption = models.CharField(_('default caption'), max_length=255, blank=True, null=True)
+    #default_alt_text = TranslatedField()
+    #default_caption = TranslatedField()
 
     subject_location = models.CharField(_('subject location'), max_length=64, blank=True,
                                         default='')
@@ -70,7 +70,7 @@ class BaseImage(File):
         super().save(*args, **kwargs)
 
     def _check_validity(self):
-        if not self.name:
+        if self.safe_translation_getter('name') is None:
             return False
         return True
 
@@ -119,10 +119,11 @@ class BaseImage(File):
 
     @property
     def label(self):
-        if self.name in ['', None]:
+        name = self.safe_translation_getter('name')
+        if not name:
             return self.original_filename or 'unnamed file'
         else:
-            return self.name
+            return name
 
     @property
     def width(self):
